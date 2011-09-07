@@ -1,1 +1,12 @@
-This is a fresh install of nodelicious, a node.js framework.
+<b>News</b><br>
+<div id='newsContainer' style='border: 1px solid gray; padding: 10px;'>
+</div>
+
+<!-- br><br>
+<b>Map</b><br>
+<input id='commandText' type='text' value='boobs' /> <button onclick='sendCommand();'>Submit</button -->
+
+<br><br>
+<b>Chat</b><br>
+<input type='text' id='commandText'> <button onclick='sendCommand();'>Send</button>
+<div id='respopnseContainer' style='border: 1px solid gray; padding: 10px;'>

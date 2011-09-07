@@ -12,6 +12,8 @@ var io = require('socket.io').listen(app);
 var url = require('url');
 var querystring = require('querystring');
 var vm = require('vm');
+var clients = [];
+var clientCount = 0;
 
 global.fs = require('fs');
 global.path = require('path');
@@ -53,7 +55,7 @@ function handler (req, res)
 	    {
 		var controller = require(controllerServerPath);
 		data = controller.run();
-		res.writeHead(200, {'Content-Type':'text/html'});
+		res.writeHead(200, {'Content-Type':'text/html', 'server':'nodealicious'});
 		res.end(data);
 	    }
 	    else
@@ -67,7 +69,9 @@ function handler (req, res)
     	            }
 
 		    var mimeType = getMimeType(controllerServerPath);
-                    res.writeHead(200, {'Content-Type': mimeType});
+		    var myNowDate = new Date();
+
+                    res.writeHead(200, {'Content-Type': mimeType, 'server':'nodealicious', 'Date':myNowDate.toUTCString()});
     	            res.end(data);
                 });
 	    }
@@ -78,3 +82,32 @@ function handler (req, res)
 	}
     });
 }
+
+io.sockets.on('connection', function (socket)
+{
+    var clientId = socket.id;
+    var connectTime = new Date().getTime();
+
+    clients[clientId] = {socket: socket, connectTime: connectTime};
+    clientCount++;
+    io.sockets.emit('commandResponse', { response: clientId+' has connected.', error: '' });
+    socket.emit('news', { content: 'This is your daily news.' });
+    console.log('clientCount: '+clientCount);
+
+    socket.on('command', function (data)
+    {
+     	console.log(data);
+        var command = data['command'];
+
+        io.sockets.emit('commandResponse', { response: clientId+' -> '+command, error: '' });
+    });
+
+    socket.on('disconnect', function (data)
+    {
+        var clientId = socket.id;
+        delete clients[clientId];
+        clientCount--;
+        io.sockets.emit('commandResponse', { response: clientId+' has disconnected.', error: '' });
+        console.log('clientCount: '+clientCount);
+    });
+});
